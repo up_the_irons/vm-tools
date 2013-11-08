@@ -29,6 +29,7 @@ require 'nokogiri'
 require 'libvirt'
 
 $VIRSH = '/usr/bin/virsh'
+$LIBVIRT_CONN = 'qemu:///system'
 
 def usage
   puts "#{$0} <UUID> <param> <value>"
@@ -46,6 +47,87 @@ if @value.empty? || @param == '--help'
   exit 1
 end
 
+def with_libvirt_connection
+  conn = Libvirt::open($LIBVIRT_CONN)
+  yield conn
+  conn.close
+end
+
+def with_libvirt_xml(uuid)
+  # Not my favorite way of doing things, but conn.xml_desc() will not
+  # include the security-info on older libvirt bindings
+  contents = %x(#{$VIRSH} dumpxml #{uuid} --security-info --inactive 2>/dev/null)
+
+  xml = Nokogiri::XML(contents)
+
+  if xml
+    yield xml
+  end
+end
+
+def with_libvirt_connection_and_xml(uuid)
+  with_libvirt_connection do |conn|
+    with_libvirt_xml(uuid) do |xml|
+      res = yield conn, xml
+
+      if res
+        conn.define_domain_xml(xml.root.to_s)
+      end
+    end
+  end
+end
+
+def set_ram(uuid, value)
+  with_libvirt_connection_and_xml(uuid) do |conn, xml|
+    retval = false
+
+    memory = xml.at_css "memory"
+    current_memory = xml.at_css "currentMemory"
+
+    if memory && current_memory
+      memory.content = value
+      current_memory.content = value
+      retval = true
+    end
+
+    retval
+  end
+end
+
+def set_cpu(uuid, value)
+  with_libvirt_connection_and_xml(uuid) do |conn, xml|
+    retval = false
+
+    cpu = xml.at_css "vcpu"
+
+    if cpu
+      cpu.content = value
+      retval = true
+    end
+
+    retval
+  end
+end
+
+def set_cdrom_iso(uuid, value)
+  with_libvirt_connection_and_xml(uuid) do |conn, xml|
+    retval = false
+
+    cdrom = xml.at_css "disk[device=cdrom]"
+
+    if cdrom
+      source = cdrom.at_css "source"
+
+      if source
+        source['file'] = value
+        retval = true
+      end
+    end
+
+    retval
+  end
+end
+
 case @param
 when "ram"
   set_ram(@uuid, @value)
@@ -56,21 +138,5 @@ when "cdrom-iso"
 else
   usage
   exit 1
-end
-
-def with_libvirt_connection
-  conn = Libvirt::open("qemu:///system")
-  yield conn
-  conn.close
-end
-
-def set_ram(uuid, value)
-  with_libvirt_connection do |conn|
-    # Not my favorite way of doing things, but conn.xml_desc() will not
-    # include the security-info on older libvirt bindings
-    contents = %x(#{$VIRSH} dumpxml #{uuid} --security-info 2>/dev/null)
-
-    doc = Nokogiri::XML(contents)
-  end
 end
 
