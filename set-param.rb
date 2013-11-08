@@ -47,6 +47,16 @@ if @value.empty? || @param == '--help'
   exit 1
 end
 
+$UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
+
+if !@uuid.match($UUID_REGEX)
+  puts "Error: Bad UUID"
+  puts ""
+
+  usage
+  exit 1
+end
+
 def with_libvirt_connection
   conn = Libvirt::open($LIBVIRT_CONN)
   yield conn
@@ -54,14 +64,18 @@ def with_libvirt_connection
 end
 
 def with_libvirt_xml(uuid)
-  # Not my favorite way of doing things, but conn.xml_desc() will not
-  # include the security-info on older libvirt bindings
-  contents = %x(#{$VIRSH} dumpxml #{uuid} --security-info --inactive 2>/dev/null)
+  # I'm paranoid, so we'll validate the UUID here as well
+  if uuid.match($UUID_REGEX)
 
-  xml = Nokogiri::XML(contents)
+    # Not my favorite way of doing things, but conn.xml_desc() will not
+    # include the security-info on older libvirt bindings
+    contents = %x(#{$VIRSH} dumpxml #{uuid} --security-info --inactive 2>/dev/null)
 
-  if xml
-    yield xml
+    xml = Nokogiri::XML(contents)
+
+    if xml
+      yield xml
+    end
   end
 end
 
