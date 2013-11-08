@@ -28,6 +28,8 @@ require 'rubygems'
 require 'nokogiri'
 require 'libvirt'
 
+$VIRSH = '/usr/bin/virsh'
+
 def usage
   puts "#{$0} <UUID> <param> <value>"
   puts ""
@@ -46,9 +48,29 @@ end
 
 case @param
 when "ram"
+  set_ram(@uuid, @value)
 when "cpu"
+  set_cpu(@uuid, @value)
 when "cdrom-iso"
+  set_cdrom_iso(@uuid, @value)
 else
   usage
   exit 1
 end
+
+def with_libvirt_connection
+  conn = Libvirt::open("qemu:///system")
+  yield conn
+  conn.close
+end
+
+def set_ram(uuid, value)
+  with_libvirt_connection do |conn|
+    # Not my favorite way of doing things, but conn.xml_desc() will not
+    # include the security-info on older libvirt bindings
+    contents = %x(#{$VIRSH} dumpxml #{uuid} --security-info 2>/dev/null)
+
+    doc = Nokogiri::XML(contents)
+  end
+end
+
