@@ -29,7 +29,9 @@ require 'nokogiri'
 require 'libvirt'
 
 def usage
-  puts "#{$0} <UUID> <ram|cpu|cdrom-iso> <value>"
+  puts "#{$0} <UUID> <param> <value>"
+  puts ""
+  puts "param: ram|cpu|cdrom-iso"
 end
 
 @uuid  = ARGV[0].to_s
@@ -38,6 +40,15 @@ end
 @other = ARGV[3].to_s
 
 if @value.empty? || @param == '--help'
+  usage
+  exit 1
+end
+
+case @param
+when "ram"
+when "cpu"
+when "cdrom-iso"
+else
   usage
   exit 1
 end
