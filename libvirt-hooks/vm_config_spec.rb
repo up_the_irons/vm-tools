@@ -34,5 +34,17 @@ describe VMConfig do
         expect(@vm_config.interface_target_device_names).to eq([])
       end
     end
+
+    context "with no target names VM config" do
+      before do
+        f = File.dirname(__FILE__) + '/sample-no-target-names.xml'
+        @xml = File.read(f)
+        @vm_config = VMConfig.new(@xml)
+      end
+
+      it "should return empty array" do
+        expect(@vm_config.interface_target_device_names).to eq([])
+      end
+    end
   end
 end
