@@ -18,12 +18,15 @@ usage if XML_FILE_NEW.empty?
 
 def convert!(xml)
   xml.css('interface').each do |interface|
+    # Change interface type
     interface['type'] = 'bridge'
 
+    # Add bridge source
     target = interface.at_css 'target'
     tap = target['dev']
     vlan = tap.sub(/^tap\d+-(\d+)(-\d+)?$/, '\1')
 
+    # Remove script; taken care of by hooks now
     if script = interface.at_css('script')
       script.remove
     end
