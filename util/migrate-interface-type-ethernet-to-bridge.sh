@@ -27,12 +27,17 @@ if [ -z "$XML_FILE_NEW" ]; then
   usage
 fi
 
-./migrate-interface-type-ethernet-to-bridge.rb $XML_FILE_OLD - | \
-  xmllint --format - > $XML_FILE_NEW
-
 TMP=$(mktemp)
 
 if [ -n "$TMP" ]; then
-  cat $XML_FILE_NEW | tr \" \' | tail -n +2 > $TMP
+  ./migrate-interface-type-ethernet-to-bridge.rb $XML_FILE_OLD - | \
+    xmllint --format - > $TMP
   mv $TMP $XML_FILE_NEW
+
+  TMP=$(mktemp)
+
+  if [ -n "$TMP" ]; then
+    cat $XML_FILE_NEW | tr \" \' | tail -n +2 > $TMP
+    mv $TMP $XML_FILE_NEW
+  fi
 fi
