@@ -24,7 +24,7 @@ def convert!(xml)
     # Add bridge source
     target = interface.at_css 'target'
     tap = target['dev']
-    vlan = tap.sub(/^tap\d+-(\d+)(-\d+)?$/, '\1')
+    vlan = tap.sub(/^tap\d+-(.+?)(-\d+)?$/, '\1')
     source = Nokogiri::XML::Node.new "source", xml
     source['bridge'] = "br#{vlan}"
     interface << source
