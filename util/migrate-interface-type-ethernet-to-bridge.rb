@@ -20,9 +20,13 @@ f = File.open(XML_FILE_OLD)
 xml = Nokogiri::XML(f)
 xml.css('interface').each do |interface|
   interface['type'] = 'bridge'
+
+  if script = interface.at_css('script')
+    script.remove
+  end
 end
 f.close
 
 File.open("#{XML_FILE_NEW}", "w") do |f|
-  f.print(xml.to_xml)
+  f.print(xml.root)
 end
