@@ -40,9 +40,14 @@ end
 
 f = File.open(XML_FILE_OLD)
 xml = Nokogiri::XML(f)
-xml = convert!(xml)
 f.close
 
-File.open("#{XML_FILE_NEW}", "w") do |f|
-  f.puts(xml.root)
+xml = convert!(xml)
+
+if XML_FILE_NEW == '-'
+  puts xml.root
+else
+  File.open("#{XML_FILE_NEW}", "w") do |f|
+    f.puts(xml.root)
+  end
 end
