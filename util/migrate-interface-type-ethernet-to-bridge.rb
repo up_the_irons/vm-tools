@@ -27,9 +27,7 @@ def convert!(xml)
     vlan = tap.sub(/^tap\d+-(\d+)(-\d+)?$/, '\1')
     source = Nokogiri::XML::Node.new "source", xml
     source['bridge'] = "br#{vlan}"
-    # interface << source
-    # target.add_next_sibling(source)
-    target.add_next_sibling("<source bridge='br#{vlan}'/>")
+    interface << source
 
     # Remove script; taken care of by hooks now
     if script = interface.at_css('script')
