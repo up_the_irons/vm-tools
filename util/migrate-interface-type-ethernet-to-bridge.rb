@@ -20,6 +20,10 @@ f = File.open(XML_FILE_OLD)
 xml = Nokogiri::XML(f)
 xml.css('interface').each do |interface|
   interface['type'] = 'bridge'
+
+  target = interface.at_css 'target'
+  tap = target['dev']
+  vlan = tap.sub(/^tap\d+-(\d+)(-\d+)?$/, '\1')
 end
 f.close
 
