@@ -41,5 +41,5 @@ xml = convert!(xml)
 f.close
 
 File.open("#{XML_FILE_NEW}", "w") do |f|
-  f.print(xml.root)
+  f.puts(xml.root)
 end
