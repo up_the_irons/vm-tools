@@ -35,6 +35,12 @@ def convert!(xml)
     end
   end
 
+  # Not really in the theme of this script, but we need it anyway to convert
+  # some old VMs
+  if emulator = xml.at_css('emulator')
+    emulator.content = '/usr/bin/kvm'
+  end
+
   xml
 end
 
