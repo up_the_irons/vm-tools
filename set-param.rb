@@ -142,6 +142,25 @@ def set_cdrom_iso(uuid, value)
   end
 end
 
+def set_nic_architecture(uuid, value)
+  with_libvirt_connection_and_xml(uuid) do |conn, xml|
+    retval = false
+
+    interfaces = xml.css "interface"
+
+    interfaces.each do |interface|
+      model = interface.at_css "model"
+
+      if model
+        model['type'] = value
+        retval = true
+      end
+    end
+
+    retval
+  end
+end
+
 case @param
 when "ram"
   set_ram(@uuid, @value)
@@ -149,6 +168,8 @@ when "cpu"
   set_cpu(@uuid, @value)
 when "cdrom-iso"
   set_cdrom_iso(@uuid, @value)
+when "nic-architecture"
+  set_nic_architecture(@uuid, @value)
 else
   usage
   exit 1
