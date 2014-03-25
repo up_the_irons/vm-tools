@@ -35,7 +35,7 @@ $LIBVIRT_CONN = 'qemu:///system'
 def usage
   puts "#{$0} <UUID> <param> <value>"
   puts ""
-  puts "param: ram|cpu|cdrom-iso|nic-model"
+  puts "param: ram|cpu|cdrom-iso|nic-model|hd-arch"
 end
 
 @uuid  = ARGV[0].to_s
@@ -174,7 +174,7 @@ when "cdrom-iso"
   set_cdrom_iso(@uuid, @value)
 when "nic-model"
   set_nic_model(@uuid, @value)
-when "hd-architecture"
+when "hd-arch"
   set_hd_architecture(@uuid, @value)
 else
   usage
