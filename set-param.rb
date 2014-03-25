@@ -10,6 +10,7 @@
 # - RAM
 # - CPU
 # - CD-ROM ISO
+# - NIC model
 #
 # Background:
 #
@@ -34,7 +35,7 @@ $LIBVIRT_CONN = 'qemu:///system'
 def usage
   puts "#{$0} <UUID> <param> <value>"
   puts ""
-  puts "param: ram|cpu|cdrom-iso"
+  puts "param: ram|cpu|cdrom-iso|nic-model"
 end
 
 @uuid  = ARGV[0].to_s
@@ -142,11 +143,11 @@ def set_cdrom_iso(uuid, value)
   end
 end
 
-def set_nic_architecture(uuid, value)
+def set_nic_model(uuid, value)
   with_libvirt_connection_and_xml(uuid) do |conn, xml|
     retval = false
 
-    interfaces = xml.css "interface"
+    interfaces = xml.css "devices interface"
 
     interfaces.each do |interface|
       model = interface.at_css "model"
@@ -168,8 +169,8 @@ when "cpu"
   set_cpu(@uuid, @value)
 when "cdrom-iso"
   set_cdrom_iso(@uuid, @value)
-when "nic-architecture"
-  set_nic_architecture(@uuid, @value)
+when "nic-model"
+  set_nic_model(@uuid, @value)
 else
   usage
   exit 1
