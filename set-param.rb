@@ -162,6 +162,9 @@ def set_nic_model(uuid, value)
   end
 end
 
+def set_hd_architecture(uuid, value)
+end
+
 case @param
 when "ram"
   set_ram(@uuid, @value)
@@ -171,6 +174,8 @@ when "cdrom-iso"
   set_cdrom_iso(@uuid, @value)
 when "nic-model"
   set_nic_model(@uuid, @value)
+when "hd-architecture"
+  set_hd_architecture(@uuid, @value)
 else
   usage
   exit 1
