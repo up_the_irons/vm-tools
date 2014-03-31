@@ -129,7 +129,7 @@ def set_cdrom_iso(uuid, value)
   with_libvirt_connection_and_xml(uuid) do |conn, xml|
     retval = false
 
-    cdrom = xml.at_css "disk[device=cdrom]"
+    cdrom = xml.at_css "devices disk[device=cdrom]"
 
     if cdrom
       source = cdrom.at_css "source"
