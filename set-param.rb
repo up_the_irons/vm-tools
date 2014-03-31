@@ -11,6 +11,7 @@
 # - CPU
 # - CD-ROM ISO
 # - NIC model
+# - HD architecture
 #
 # Background:
 #
@@ -163,6 +164,22 @@ def set_nic_model(uuid, value)
 end
 
 def set_hd_architecture(uuid, value)
+  with_libvirt_connection_and_xml(uuid) do |conn, xml|
+    retval = false
+
+    disks = xml.css "devices disk[device=disk]"
+
+    disks.each do |disk|
+      target = disk.at_css "target"
+
+      if target
+        target['bus'] = value
+        retval = true
+      end
+    end
+
+    retval
+  end
 end
 
 case @param
