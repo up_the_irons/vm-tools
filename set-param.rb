@@ -174,6 +174,13 @@ def set_hd_architecture(uuid, value)
 
       if target
         target['bus'] = value
+
+        # libvirt will re-create the address tag with defaults on versions
+        # that support it
+        if address = disk.at_css("address")
+          address.remove
+        end
+
         retval = true
       end
     end
