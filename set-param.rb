@@ -12,6 +12,7 @@
 # - CD-ROM ISO
 # - NIC model
 # - HD architecture
+# - websocket port
 #
 # Background:
 #
@@ -36,7 +37,7 @@ $LIBVIRT_CONN = 'qemu:///system'
 def usage
   puts "#{$0} <UUID> <param> <value>"
   puts ""
-  puts "param: ram|cpu|cdrom-iso|nic-model|hd-arch"
+  puts "param: ram|cpu|cdrom-iso|nic-model|hd-arch|websocket"
 end
 
 @uuid  = ARGV[0].to_s
@@ -189,6 +190,28 @@ def set_hd_architecture(uuid, value)
   end
 end
 
+def set_websocket_port(uuid, value)
+  with_libvirt_connection_and_xml(uuid) do |conn, xml|
+    retval = false
+
+    graphics = xml.at_css "devices graphics[type=vnc]"
+
+    if graphics
+      vnc_port = graphics['port'].to_i
+      websocket_port = (value == 'auto') ? (vnc_port - 500) : value
+
+      if websocket_port
+	puts "VNC port is #{vnc_port}; setting websocket port to #{websocket_port}..."
+        graphics['websocket'] = websocket_port
+
+        retval = true
+      end
+    end
+
+    retval
+  end
+end
+
 case @param
 when "ram"
   set_ram(@uuid, @value)
@@ -200,6 +223,8 @@ when "nic-model"
   set_nic_model(@uuid, @value)
 when "hd-arch"
   set_hd_architecture(@uuid, @value)
+when "websocket"
+  set_websocket_port(@uuid, @value)
 else
   usage
   exit 1
