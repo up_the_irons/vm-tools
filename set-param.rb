@@ -13,6 +13,8 @@
 # - NIC model
 # - HD architecture
 # - websocket port
+# - BIOS useserial option
+# - BIOS bootmenu option
 #
 # Background:
 #
@@ -37,7 +39,7 @@ $LIBVIRT_CONN = 'qemu:///system'
 def usage
   puts "#{$0} <UUID> <param> <value>"
   puts ""
-  puts "param: ram|cpu|cdrom-iso|nic-model|hd-arch|websocket"
+  puts "param: ram|cpu|cdrom-iso|nic-model|hd-arch|websocket|bios-serial|boot-menu"
 end
 
 @uuid  = ARGV[0].to_s
@@ -212,6 +214,54 @@ def set_websocket_port(uuid, value)
   end
 end
 
+def set_bios_serial(uuid, value)
+  with_libvirt_connection_and_xml(uuid) do |conn, xml|
+    retval = false
+
+    if value == 'yes' || value == 'no'
+      os = xml.at_css "os"
+
+      if os
+        bios = os.at_css "bios"
+
+        if bios
+	  bios['useserial'] = value
+        else
+          os << "<bios useserial='#{value}'/>"
+        end
+
+        retval = true
+      end
+    end
+
+    retval
+  end
+end
+
+def set_boot_menu(uuid, value)
+  with_libvirt_connection_and_xml(uuid) do |conn, xml|
+    retval = false
+
+    if value == 'yes' || value == 'no'
+      os = xml.at_css "os"
+
+      if os
+        bootmenu = os.at_css "bootmenu"
+
+        if bootmenu
+	  bootmenu['enable'] = value
+        else
+          os << "<bootmenu enable='#{value}'/>"
+        end
+
+        retval = true
+      end
+    end
+
+    retval
+  end
+end
+
 case @param
 when "ram"
   set_ram(@uuid, @value)
@@ -225,6 +275,10 @@ when "hd-arch"
   set_hd_architecture(@uuid, @value)
 when "websocket"
   set_websocket_port(@uuid, @value)
+when "bios-serial"
+  set_bios_serial(@uuid, @value)
+when "boot-menu"
+  set_boot_menu(@uuid, @value)
 else
   usage
   exit 1
